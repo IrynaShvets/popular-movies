@@ -14,8 +14,8 @@ const BASE_URL_IMAGE = "https://image.tmdb.org/t/p/original";
 
 const fetchPopularMovie = async () => {
   try {
-    const response = await fetch(`${BASE_URL}movie/popular?api_key=${API_KEY}`);
-    const movies = await response.json();
+    const response = await axios.get(`${BASE_URL}movie/popular?api_key=${API_KEY}`);
+    const movies = await response.data;
     return movies;
   } catch (error) {
     console.log(error);
@@ -64,8 +64,8 @@ async function fetchMovieDetails() {
   const url = `${BASE_URL}movie/157336?api_key=${API_KEY}`;
 
   try {
-    const response = await fetch(url);
-    const movie = await response.json();
+    const response = await axios.get(url);
+    const movie = await response.data;
     return movie;
   } catch (error) {
     console.log(error);
