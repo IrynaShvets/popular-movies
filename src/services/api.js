@@ -3,37 +3,60 @@ const BASE_URL = "https://api.themoviedb.org/3/";
 const BASE_URL_IMAGE = "https://image.tmdb.org/t/p/original";
 
 export default class ApiService {
-    constructor() {
-        this.page = 1;
-    }
+  constructor() {
+    this.page = 1;
+    this.searchQuery = "";
+  }
 
-    async fetchPopularMovie() {
-        try {
-          const response = await axios.get(
-            `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${this.page}`
-          );
-          const movies = await response.data;
-          this.incrementPage();
-          return movies;
-        } catch (error) {
-          console.log(error);
-        }
-      };
+  async fetchPopularMovie() {
+    const url = `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${this.page}`;
 
-      async fetchMovieDetails() {
-          const url = `${BASE_URL}movie/157336?api_key=${API_KEY}`;
-        
-          try {
-            const response = await axios.get(url);
-            const movie = await response.data;
-            return movie;
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      
-    incrementPage() {
-        this.page += 1;
+    try {
+      const response = await axios.get(url);
+      const movies = await response.data;
+      this.incrementPage();
+      return movies;
+    } catch (error) {
+      console.log(error);
     }
-    
+  }
+
+  async fetchMovieDetails() {
+    const url = `${BASE_URL}movie/157336?api_key=${API_KEY}`;
+
+    try {
+      const response = await axios.get(url);
+      const movie = await response.data;
+      return movie;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async fetchSearchMovies() {
+    const url = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${this.searchQuery}&page=${this.page}`;
+    try {
+      const response = await axios.get(url);
+      const data = response.data;
+      this.incrementPage();
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  incrementPage() {
+    this.page += 1;
+  }
+
+  async resetPage() {
+    this.page = 1;
+  }
+
+  get query() {
+    return this.searchQuery;
+  }
+  set query(newQuery) {
+    this.searchQuery = newQuery;
+  }
 }
