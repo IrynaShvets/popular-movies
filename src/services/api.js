@@ -6,6 +6,7 @@ export default class ApiService {
   constructor() {
     this.page = 1;
     this.searchQuery = "";
+    this.movie_id = null;
   }
 
   async fetchPopularMovie() {
@@ -22,7 +23,7 @@ export default class ApiService {
   }
 
   async fetchMovieDetails() {
-    const url = `${BASE_URL}movie/157336?api_key=${API_KEY}`;
+    const url = `${BASE_URL}movie/${this.movie_id}?api_key=${API_KEY}`;
 
     try {
       const response = await axios.get(url);
