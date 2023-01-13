@@ -1,12 +1,12 @@
 import LoadMoreBtn from "./helpers/loadMore.js";
 import ApiService from "./services/api.js";
 import scroll from "./helpers/scroll.js";
+import appendValueToStorage from "./helpers/localStorage.js";
 
 const refs = {
   listMovie: document.getElementById("listMovie"),
   btnSeeMore: document.getElementById("btnSeeMore"),
   btnCast: document.getElementById("btnCast"),
-  // openModalBtn: document.getElementById("open-modal-id"),
   closeModalBtn: document.getElementById("close-modal-id"),
   modal: document.getElementById("modal"),
   overviewId: document.getElementById("overview-id"),
@@ -15,23 +15,26 @@ const refs = {
   searchQueryInput: document.querySelector('[name="searchQuery"]'),
   searchContainer: document.getElementById("search-container"),
   modalBackdrop: document.querySelector('.modal-backdrop'),
+  favoriteBtn: document.getElementById('favorite-btn'),
 };
 
 const apiService = new ApiService();
-console.log(apiService)
+
 const loadMoreBtn = new LoadMoreBtn({
   selector: "[load-more]",
   hidden: true,
 });
 
 // let toggleMarkup = true;
+const contentToAdd = [];
 
 refs.searchForm.addEventListener("submit", onSearchForm);
 loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
 
 appendMoviesMarkup();
 
-async function appendMoviesMarkup() {
+
+async function appendMoviesMarkup(e) {
   
   await apiService
     .fetchPopularMovie()
@@ -82,6 +85,7 @@ async function appendMoviesMarkup() {
 
 async function onSearchForm(e) {
   e.preventDefault();
+ 
   apiService.query = refs.searchQueryInput.value.trim();
   apiService.resetPage();
   if (refs.searchQueryInput.value === "") {
@@ -144,16 +148,16 @@ async function onSearchForm(e) {
       scroll();
     });
 }
-
-document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
+    document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
         "click",
         e => {
+  
           refs.modal.classList.toggle("hidden");
           refs.overviewId.innerHTML = "";
           const currentItem = e.target.parentNode;
           const currentId = currentItem.getAttribute("movie-id")
           apiService.idMovie = currentId;
-
+         
     apiService.fetchMovieDetails()
     .then((data) => {
     
@@ -163,23 +167,31 @@ document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
       if (!data || !data.id) {
         return;
       }
-      
+
       const genres = data.genres.map(el => el.name).join(", ");
       document.getElementById("modal-title").textContent = `${data.title}`;
       const markup = `
       <div class="flex">
       <img src="https://image.tmdb.org/t/p/w500/${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded mr-6">
-                        <div>
-                        <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
-                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
-                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
-                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
-                        </div>
-                        </div>
-      
-<p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
+      <div>
+        <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
+        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
+        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
+        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
+      </div>
+      </div>
+      <p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
                     `;
       refs.overviewId.insertAdjacentHTML("beforeend", markup);
+
+      refs.favoriteBtn.removeEventListener("click", () => {
+        appendValueToStorage('todays-values', currentId);
+      });
+ 
+       refs.favoriteBtn.addEventListener("click", () => {
+        appendValueToStorage('todays-values', currentId);
+      });
+           
     })
     .catch((error) => console.log(error));
     }));
@@ -195,4 +207,3 @@ function clearMovie() {
 function toggleMarkup() {
   // 
 }
-
