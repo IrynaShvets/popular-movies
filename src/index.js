@@ -24,6 +24,8 @@ const loadMoreBtn = new LoadMoreBtn({
   hidden: true,
 });
 
+// let toggleMarkup = true;
+
 refs.searchForm.addEventListener("submit", onSearchForm);
 loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
 
@@ -53,21 +55,26 @@ async function appendMoviesMarkup() {
         loadMoreBtn.show();
         clearMovie();
         data
-          .map(({ title, backdrop_path }) => {
+          .map(({ title, backdrop_path, id }) => {
               const markup = backdrop_path && backdrop_path !== null
-              ? `<li id="modalid" class="h-auto">
+              ? `<li movie-id=${id} id="modalid" class="h-auto">
                     <img src="https://image.tmdb.org/t/p/original/${backdrop_path}" alt="${title} loading='lazy'" class="rounded-t-lg">
                     <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                         <p class="text-xl text-slate-600">${title}</p>
                     </div>
                 </li>`
-              : `<li id="modalid" class="h-auto">
+              : `<li movie-id=${id} id="modalid" class="h-auto">
                     <img src="https://i.gyazo.com/c43bcb8fc7e50c57740731c2c2e301ef.jpg" alt="${title}" loading='lazy' class="rounded-t-lg">
                     <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                         <p class="text-xl text-slate-600">${title}</p>
                     </div>
                 </li>`;
-              refs.listMovie.insertAdjacentHTML("beforeend", markup);
+               refs.listMovie.insertAdjacentHTML("beforeend", markup);
+              // var els = document.querySelectorAll('#modalid');
+              //   for (var i=0; i < els.length; i++) {
+              //       els[i].setAttribute("movie-id", `${id}`);
+              // }
+             // document.querySelectorAll("#modalid").setAttribute("movie-id", id);
           })
           .join("");
       }
@@ -147,10 +154,10 @@ document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
         "click",
         e => {
           refs.modal.classList.toggle("hidden");
-          // alert(e.currentTarget.dataset);
           refs.overviewId.innerHTML = "";
-console.log(e.target.parentNode);
-console.log(e.target.tagName === "P");
+          const currentItem = e.target.parentNode;
+          const currentId = currentItem.getAttribute("movie-id")
+          apiService.idMovie = currentId;
 
     apiService.fetchMovieDetails()
     .then((data) => {
@@ -161,10 +168,14 @@ console.log(e.target.tagName === "P");
       if (!data || !data.id) {
         return;
       }
-      apiService.idMovie = data.id;
-      const markup = `<li class="h-auto">
-                        <p class="my-4 text-slate-500 text-lg leading-relaxed"></p>
-                    </li>`;
+      
+      const genres = data.genres.map(el => el.name)
+      console.log(genres)
+      document.getElementById("modal-title").textContent = `${data.title}`;
+      const markup = `
+      <img src="https://image.tmdb.org/t/p/w500/${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded-t-lg">
+                        <p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
+                    `;
       refs.overviewId.insertAdjacentHTML("beforeend", markup);
     })
     .catch((error) => console.log(error));
@@ -176,5 +187,9 @@ refs.closeModalBtn.addEventListener("click", () => {
 
 function clearMovie() {
   refs.listMovie.innerHTML = "";
+}
+
+function toggleMarkup() {
+  // 
 }
 
