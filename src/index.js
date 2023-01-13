@@ -70,11 +70,6 @@ async function appendMoviesMarkup() {
                     </div>
                 </li>`;
                refs.listMovie.insertAdjacentHTML("beforeend", markup);
-              // var els = document.querySelectorAll('#modalid');
-              //   for (var i=0; i < els.length; i++) {
-              //       els[i].setAttribute("movie-id", `${id}`);
-              // }
-             // document.querySelectorAll("#modalid").setAttribute("movie-id", id);
           })
           .join("");
       }
@@ -129,13 +124,13 @@ async function onSearchForm(e) {
             .map((movie) => {
               const markup =
               movie.backdrop_path && movie.backdrop_path !== null
-                  ? `<li id="modalid" class="h-auto">
+                  ? `<li movie-id=${movie.id} id="modalid" class="h-auto">
                         <img src="https://image.tmdb.org/t/p/original/${movie.backdrop_path}" alt="${movie.title} loading='lazy'" class="rounded-t-lg">
                         <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                             <p class="text-xl text-slate-600">${movie.title}</p>
                         </div>
                     </li>`
-                  : `<li id="modalid" class="h-auto">
+                  : `<li movie-id=${movie.id} id="modalid" class="h-auto">
                         <img src="https://i.gyazo.com/c43bcb8fc7e50c57740731c2c2e301ef.jpg" alt="${movie.title}" loading='lazy' class="rounded-t-lg">
                         <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                             <p class="text-xl text-slate-600">${movie.title}</p>
@@ -170,7 +165,6 @@ document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
       }
       
       const genres = data.genres.map(el => el.name).join(", ");
-      console.log(genres)
       document.getElementById("modal-title").textContent = `${data.title}`;
       const markup = `
       <div class="flex">
@@ -180,7 +174,6 @@ document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
                         <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
                         <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
                         <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
-                        
                         </div>
                         </div>
       
