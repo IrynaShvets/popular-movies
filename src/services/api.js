@@ -57,7 +57,16 @@ export default class ApiService {
   get query() {
     return this.searchQuery;
   }
+
   set query(newQuery) {
     this.searchQuery = newQuery;
+  }
+
+  get idMovie() {
+    return this.movie_id;
+  }
+
+  set idMovie(newId) {
+    this.movie_id = newId;
   }
 }

@@ -158,10 +158,10 @@ console.log(e.target.tagName === "P");
       if (data === "") {
         return;
       }
-
-   //  apiService.movie_id = data.id;
-    // apiService.movie_id = e.currentTarget;
-    
+      if (!data || !data.id) {
+        return;
+      }
+      apiService.idMovie = data.id;
       const markup = `<li class="h-auto">
                         <p class="my-4 text-slate-500 text-lg leading-relaxed"></p>
                     </li>`;
