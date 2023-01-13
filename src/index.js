@@ -169,12 +169,22 @@ document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
         return;
       }
       
-      const genres = data.genres.map(el => el.name)
+      const genres = data.genres.map(el => el.name).join(", ");
       console.log(genres)
       document.getElementById("modal-title").textContent = `${data.title}`;
       const markup = `
-      <img src="https://image.tmdb.org/t/p/w500/${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded-t-lg">
-                        <p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
+      <div class="flex">
+      <img src="https://image.tmdb.org/t/p/w500/${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded mr-6">
+                        <div>
+                        <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
+                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
+                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
+                        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
+                        
+                        </div>
+                        </div>
+      
+<p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
                     `;
       refs.overviewId.insertAdjacentHTML("beforeend", markup);
     })
