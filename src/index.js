@@ -25,28 +25,20 @@ const loadMoreBtn = new LoadMoreBtn({
   hidden: true,
 });
 
-// let toggleMarkup = true;
-const contentToAdd = [];
-
 refs.searchForm.addEventListener("submit", onSearchForm);
-loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
 
 appendMoviesMarkup();
 
-
-async function appendMoviesMarkup(e) {
+async function appendMoviesMarkup() {
   
   await apiService
     .fetchPopularMovie()
     .then((movies) => {
       const data = movies.results;
 
-      if (data === "") {
-        return;
-      }
-
       if (data.length === 0) {
         loadMoreBtn.hide();
+        loadMoreBtn.refs.button.removeEventListener("click", appendMoviesMarkup);
         const markup = `<span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>`;
         refs.searchContainer.insertAdjacentHTML("beforeend", markup);
         setTimeout(() => {
@@ -54,8 +46,9 @@ async function appendMoviesMarkup(e) {
         }, 4000);
       }
 
-      if (data.length >= 20 || data.length >= 1) {
+      if (data.length >= 20) {
         loadMoreBtn.show();
+        loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
         clearMovie();
         data
           .map(({ title, backdrop_path, id }) => {
@@ -86,9 +79,8 @@ async function appendMoviesMarkup(e) {
 async function onSearchForm(e) {
   e.preventDefault();
  
-  apiService.query = refs.searchQueryInput.value.trim();
-  apiService.resetPage();
   if (refs.searchQueryInput.value === "") {
+    e.currentTarget.reset();
     const markup = `
      <span id="message" class="text-red-500 grow-0">You have not entered anything. Please enter a value.</span>
  `;
@@ -96,20 +88,30 @@ async function onSearchForm(e) {
         setTimeout(() => {
           document.getElementById("message").remove();
         }, 4000);
-
     return;
   }
 
+  apiService.query = refs.searchQueryInput.value.trim();
+  apiService.resetPage();
+  
   await apiService
     .fetchSearchMovies()
     .then((movies) => {
       const data = movies.results;
-      movies.total_pages === movies.page
-        ? loadMoreBtn.hide()
-        : loadMoreBtn.show();
+      
+      if (movies.total_pages === movies.page) {
+        loadMoreBtn.hide()
+        loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
+      } else {
+        loadMoreBtn.show();
+        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
+        
+      }
+       
       console.log(data);
-      if (data.length === 0 && data.length !== "") {
+      if (data.length === 0) {
         loadMoreBtn.hide();
+        loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
 
        const markup = `
      <span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>
@@ -122,6 +124,7 @@ async function onSearchForm(e) {
       }
 
         loadMoreBtn.show();
+        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
           clearMovie();
           
           data
@@ -145,29 +148,40 @@ async function onSearchForm(e) {
     })
     .catch((error) => console.log(error))
     .finally(() => {
+      
       scroll();
     });
 }
     document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
         "click",
         e => {
+
+          document.querySelectorAll("#listMovie").forEach(i => i.removeEventListener(
+            "click",
+            e => {
+
+
+              
+            }))
   
           refs.modal.classList.toggle("hidden");
           refs.overviewId.innerHTML = "";
           const currentItem = e.target.parentNode;
+          console.log(currentItem)
+
           const currentId = currentItem.getAttribute("movie-id")
+          console.log(currentId)
           apiService.idMovie = currentId;
+
+     
+        
          
     apiService.fetchMovieDetails()
     .then((data) => {
     
-      if (data === "") {
-        return;
-      }
       if (!data || !data.id) {
         return;
       }
-
       const genres = data.genres.map(el => el.name).join(", ");
       document.getElementById("modal-title").textContent = `${data.title}`;
       const markup = `
@@ -183,13 +197,14 @@ async function onSearchForm(e) {
       <p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
                     `;
       refs.overviewId.insertAdjacentHTML("beforeend", markup);
-
+      const setAtrToFavoriteBtn = refs.favoriteBtn.setAttribute("current-Id", currentId)
+      const getAtrToFavoriteBtn = refs.favoriteBtn.getAttribute("current-Id")
+    
       refs.favoriteBtn.removeEventListener("click", () => {
-        appendValueToStorage('todays-values', currentId);
+        appendValueToStorage('todays-values', getAtrToFavoriteBtn);
       });
- 
        refs.favoriteBtn.addEventListener("click", () => {
-        appendValueToStorage('todays-values', currentId);
+        appendValueToStorage('todays-values', getAtrToFavoriteBtn);
       });
            
     })
@@ -202,8 +217,4 @@ refs.closeModalBtn.addEventListener("click", () => {
 
 function clearMovie() {
   refs.listMovie.innerHTML = "";
-}
-
-function toggleMarkup() {
-  // 
 }
