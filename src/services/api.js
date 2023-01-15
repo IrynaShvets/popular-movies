@@ -10,18 +10,19 @@ export default class ApiService {
 
   async fetchPopularMovie() {
     const url = `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${this.page}`;
-
+    console.log(url);
     try {
       const response = await axios({
-        method: 'get',
-        timeout: 3000,
+        method: "get",
+        timeout: 2000,
+        headers: { "Content-Type": "application/json" },
         url,
-  });
+      });
       const movies = await response.data;
       this.incrementPage();
       return movies;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -30,34 +31,37 @@ export default class ApiService {
 
     try {
       const response = await axios({
-        method: 'get',
+        method: "get",
         timeout: 1000,
+        headers: { "Content-Type": "application/json" },
         url,
-  });
+      });
       const movie = await response.data;
       return movie;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
   async fetchSearchMovies() {
     const url = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${this.searchQuery}&page=${this.page}`;
+    console.log(url);
     try {
       const response = await axios({
-        method: 'get',
-        timeout: 2000,
+        method: "get",
+        timeout: 1000,
+        headers: { "Content-Type": "application/json" },
         url,
-  });
-      const data = response.data;
+      });
+      const movies = await response.data;
       this.incrementPage();
-      return data;
+      return movies;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
-  incrementPage() {
+  async incrementPage() {
     this.page += 1;
   }
 
