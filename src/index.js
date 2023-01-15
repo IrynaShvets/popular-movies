@@ -16,7 +16,14 @@ const refs = {
   searchContainer: document.getElementById("search-container"),
   modalBackdrop: document.querySelector('.modal-backdrop'),
   favoriteBtn: document.getElementById('favorite-btn'),
+  loaderId: document.getElementById("loader-id"),
+  
 };
+
+const BASE_URL_IMAGE = "https://image.tmdb.org/t/p/original";
+const BASE_URL_IMAGE_W500 = "https://image.tmdb.org/t/p/w500";
+const BASE_URL_DEFAULTS = "https://i.gyazo.com/c43bcb8fc7e50c57740731c2c2e301ef.jpg";
+
 
 const apiService = new ApiService();
 
@@ -47,20 +54,21 @@ async function appendMoviesMarkup() {
       }
 
       if (data.length >= 20) {
+        apiService.incrementPage();
         loadMoreBtn.show();
         loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
         clearMovie();
         data
           .map(({ title, backdrop_path, id }) => {
-              const markup = backdrop_path && backdrop_path !== null
-              ? `<li movie-id=${id} id="modalid" class="h-auto">
-                    <img src="https://image.tmdb.org/t/p/original/${backdrop_path}" alt="${title} loading='lazy'" class="rounded-t-lg">
+              const markup = backdrop_path && backdrop_path !== null   
+              ? `<li movie-id=${id} id="modalid" class="h-full">
+                    <img src="${BASE_URL_IMAGE}${backdrop_path}" alt="${title} loading='lazy'" class="rounded-t-lg block w-full h-auto object-cover">
                     <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                         <p class="text-xl text-slate-600">${title}</p>
                     </div>
                 </li>`
-              : `<li movie-id=${id} id="modalid" class="h-auto">
-                    <img src="https://i.gyazo.com/c43bcb8fc7e50c57740731c2c2e301ef.jpg" alt="${title}" loading='lazy' class="rounded-t-lg">
+              : `<li movie-id=${id} id="modalid" class="h-auto">  
+                    <img src="${BASE_URL_DEFAULTS}" alt="${title}" loading='lazy' class="rounded-t-lg block w-full h-auto object-cover">
                     <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                         <p class="text-xl text-slate-600">${title}</p>
                     </div>
@@ -72,15 +80,15 @@ async function appendMoviesMarkup() {
     })
     .catch((error) => console.log(error))
     .finally(() => {
-      scroll();
+     scroll();
     });
 }
 
 async function onSearchForm(e) {
   e.preventDefault();
- 
+  
   if (refs.searchQueryInput.value === "") {
-    e.currentTarget.reset();
+   e.currentTarget.reset();
     const markup = `
      <span id="message" class="text-red-500 grow-0">You have not entered anything. Please enter a value.</span>
  `;
@@ -105,7 +113,6 @@ async function onSearchForm(e) {
       } else {
         loadMoreBtn.show();
         loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
-        
       }
        
       console.log(data);
@@ -132,13 +139,13 @@ async function onSearchForm(e) {
               const markup =
               movie.backdrop_path && movie.backdrop_path !== null
                   ? `<li movie-id=${movie.id} id="modalid" class="h-auto">
-                        <img src="https://image.tmdb.org/t/p/original/${movie.backdrop_path}" alt="${movie.title} loading='lazy'" class="rounded-t-lg">
+                        <img src="${BASE_URL_IMAGE}${movie.backdrop_path}" alt="${movie.title} loading='lazy'" class="rounded-t-lg">
                         <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                             <p class="text-xl text-slate-600">${movie.title}</p>
                         </div>
                     </li>`
                   : `<li movie-id=${movie.id} id="modalid" class="h-auto">
-                        <img src="https://i.gyazo.com/c43bcb8fc7e50c57740731c2c2e301ef.jpg" alt="${movie.title}" loading='lazy' class="rounded-t-lg">
+                        <img src="${BASE_URL_DEFAULTS}" alt="${movie.title}" loading='lazy' class="rounded-t-lg">
                         <div class="p-5 bg-gradient-to-r from-pink-200 to-sky-200 rounded-b-lg">
                             <p class="text-xl text-slate-600">${movie.title}</p>
                         </div>
@@ -155,16 +162,7 @@ async function onSearchForm(e) {
     document.querySelectorAll("#listMovie").forEach(i => i.addEventListener(
         "click",
         e => {
-
-          document.querySelectorAll("#listMovie").forEach(i => i.removeEventListener(
-            "click",
-            e => {
-
-
-              
-            }))
-  
-          refs.modal.classList.toggle("hidden");
+          onToggle();
           refs.overviewId.innerHTML = "";
           const currentItem = e.target.parentNode;
           console.log(currentItem)
@@ -173,9 +171,6 @@ async function onSearchForm(e) {
           console.log(currentId)
           apiService.idMovie = currentId;
 
-     
-        
-         
     apiService.fetchMovieDetails()
     .then((data) => {
     
@@ -184,19 +179,33 @@ async function onSearchForm(e) {
       }
       const genres = data.genres.map(el => el.name).join(", ");
       document.getElementById("modal-title").textContent = `${data.title}`;
-      const markup = `
-      <div class="flex">
-      <img src="https://image.tmdb.org/t/p/w500/${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded mr-6">
-      <div>
-        <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
-        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
-        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
-        <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
-      </div>
-      </div>
-      <p class="my-4 text-slate-500 text-lg leading-relaxed">${data.overview}</p>
-                    `;
+
+
+      const markup =
+              data.backdrop_path && data.backdrop_path !== null    
+                  ? `<div class="flex p-6">
+                  <img src="${BASE_URL_IMAGE_W500}${data.backdrop_path}" alt="${data.title} loading='lazy'" class="rounded mr-6">
+                  <div>
+                    <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
+                  </div>
+                  </div>
+                  <p class="p-6 text-slate-500 text-lg leading-relaxed">${data.overview}</p>`
+                  : `<div class="flex p-6">
+                  <img src="${BASE_URL_DEFAULTS}" alt="${data.title} loading='lazy'" class="rounded mr-6 w-60">
+                  <div>
+                    <h4 class="mb-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Original title:</span> ${data.original_title}</h4>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Release date:</span> ${data.release_date}.</p>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Genres of cinema:</span> ${genres}.</p>
+                    <p class="my-4 text-slate-500 text-lg leading-relaxed"><span class="font-semibold">Tagline:</span> ${data.tagline}.</p>
+                  </div>
+                  </div>
+                  <p class="p-6 text-slate-500 text-lg leading-relaxed">${data.overview}</p>`;
+     
       refs.overviewId.insertAdjacentHTML("beforeend", markup);
+      
       const setAtrToFavoriteBtn = refs.favoriteBtn.setAttribute("current-Id", currentId)
       const getAtrToFavoriteBtn = refs.favoriteBtn.getAttribute("current-Id")
     
@@ -211,9 +220,13 @@ async function onSearchForm(e) {
     .catch((error) => console.log(error));
     }));
 
-refs.closeModalBtn.addEventListener("click", () => {
+refs.closeModalBtn.addEventListener("click", onToggle);
+refs.closeModalBtn.removeEventListener("click", onToggle, true);
+
+function onToggle() {
   refs.modal.classList.toggle("hidden");
-});
+  refs.modal.classList.remove('animate-fade-in');
+}
 
 function clearMovie() {
   refs.listMovie.innerHTML = "";

@@ -8,7 +8,8 @@ export default function appendValueToStorage(key, value) {
     if (!values.includes(value)){
         values.push(value);
         localStorage.setItem(key, JSON.stringify(values));
-        alert("Ваш фільм успішно додано.")
+
+       alert("Ваш фільм успішно додано.")
       }
 
     // if (values.includes(value)) {

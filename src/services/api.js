@@ -1,6 +1,5 @@
 const API_KEY = "d3c00761eff125b45afbcd52d8235bc7";
 const BASE_URL = "https://api.themoviedb.org/3/";
-const BASE_URL_IMAGE = "https://image.tmdb.org/t/p/original";
 
 export default class ApiService {
   constructor() {
@@ -13,7 +12,11 @@ export default class ApiService {
     const url = `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${this.page}`;
 
     try {
-      const response = await axios.get(url);
+      const response = await axios({
+        method: 'get',
+        timeout: 3000,
+        url,
+  });
       const movies = await response.data;
       this.incrementPage();
       return movies;
@@ -26,7 +29,11 @@ export default class ApiService {
     const url = `${BASE_URL}movie/${this.movie_id}?api_key=${API_KEY}`;
 
     try {
-      const response = await axios.get(url);
+      const response = await axios({
+        method: 'get',
+        timeout: 1000,
+        url,
+  });
       const movie = await response.data;
       return movie;
     } catch (error) {
@@ -37,7 +44,11 @@ export default class ApiService {
   async fetchSearchMovies() {
     const url = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${this.searchQuery}&page=${this.page}`;
     try {
-      const response = await axios.get(url);
+      const response = await axios({
+        method: 'get',
+        timeout: 2000,
+        url,
+  });
       const data = response.data;
       this.incrementPage();
       return data;
