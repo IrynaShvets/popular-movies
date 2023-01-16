@@ -8,7 +8,6 @@ const refs = {
   closeModalBtn: document.getElementById("close-modal-id"),
   modal: document.getElementById("modal"),
   overviewId: document.getElementById("overview-id"),
-  loadMoreId: document.getElementById("load-more-id"),
   searchForm: document.getElementById("search-form"),
   searchQueryInput: document.querySelector('[name="searchQuery"]'),
   searchContainer: document.getElementById("search-container"),
@@ -84,7 +83,7 @@ async function appendMoviesMarkup() {
 
 async function onSearchForm(e) {
   e.preventDefault();
- // apiService.resetPage();
+ //apiService.resetPage();
 
   if (refs.searchQueryInput.value === "") {
     e.currentTarget.reset();
