@@ -25,23 +25,53 @@ const apiService = new ApiService();
 
 const loadMoreBtn = new LoadMoreBtn({
   selector: "[load-more]",
+  selector1: "[load-more1]",
   hidden: true,
 });
+
+const elementInstanceLoadMore = Object.values(loadMoreBtn)
+const selectorWithInstance = elementInstanceLoadMore[0]
+const selector1WithInstance = elementInstanceLoadMore[1]
+console.log(selectorWithInstance)
+console.log(selector1WithInstance)
 
 refs.searchForm.addEventListener("submit", onSearchForm)
  
 appendMoviesMarkup();
 
 async function appendMoviesMarkup() {
+
+  
+// if (elementInstanceLoadMore[0]) {
+//         apiService.incrementPage();
+//       } 
+//       if (elementInstanceLoadMore[1]) {
+//         apiService.decrementPage();
+//       }
+
+
+if (loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup)) {
+  apiService.incrementPage();
+} 
+if (loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup)) {
+  apiService.decrementPage();
+}
+
   await apiService
     .fetchPopularMovie()
     .then((movies) => {
       const data = movies.results;
 
+    
       if (data.length === 0) {
         loadMoreBtn.hide();
+        loadMoreBtn.hide1();
        
         loadMoreBtn.refs.button.removeEventListener(
+          "click",
+          appendMoviesMarkup
+        );
+        loadMoreBtn.refs1.button.removeEventListener(
           "click",
           appendMoviesMarkup
         );
@@ -54,10 +84,16 @@ async function appendMoviesMarkup() {
 
       if (data.length >= 20) {
         loadMoreBtn.show();
+        loadMoreBtn.show1();
         loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
+        
         loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
-
-        clearMovie();
+        
+        //apiService.decrementPage();
+        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
+        loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup);
+        
+      clearMovie();
         data
           .map(({ title, backdrop_path, id }) => {
             const markup =
@@ -83,7 +119,7 @@ async function appendMoviesMarkup() {
 
 async function onSearchForm(e) {
   e.preventDefault();
- //apiService.resetPage();
+ 
 
   if (refs.searchQueryInput.value === "") {
     e.currentTarget.reset();
@@ -98,7 +134,7 @@ async function onSearchForm(e) {
   }
  
   apiService.query = refs.searchQueryInput.value.trim();
-
+//apiService.resetPage();
   await apiService
     .fetchSearchMovies()
     .then((movies) => {
@@ -107,20 +143,29 @@ async function onSearchForm(e) {
 
       if (movies.total_pages === movies.page) {
         loadMoreBtn.hide();
+        loadMoreBtn.hide1();
         loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
+        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
       } else {
         loadMoreBtn.show();
-      
+        loadMoreBtn.show1();
         loadMoreBtn.refs.button.removeEventListener(
           "click",
           appendMoviesMarkup
         );
-        loadMoreBtn.refs.button.addEventListener("click", onSearchForm)
+        loadMoreBtn.refs1.button.removeEventListener(
+          "click",
+          appendMoviesMarkup
+        );
+        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
+        loadMoreBtn.refs1.button.addEventListener("click", onSearchForm);
       }
 
       if (data.length === 0) {
         loadMoreBtn.hide();
+        loadMoreBtn.hide1();
         loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
+        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
 
         const markup = `
      <span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>
@@ -135,13 +180,19 @@ async function onSearchForm(e) {
 
       if (data.length >= 1) {
         loadMoreBtn.show();
+        loadMoreBtn.show1();
         loadMoreBtn.refs.button.removeEventListener(
+          "click",
+          appendMoviesMarkup
+        );
+        loadMoreBtn.refs1.button.removeEventListener(
           "click",
           appendMoviesMarkup
         );
        
         loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
-        clearMovie();
+        loadMoreBtn.refs1.button.addEventListener("click", onSearchForm);
+       clearMovie();
 
         data
           .map((movie) => {
@@ -162,7 +213,7 @@ async function onSearchForm(e) {
     })
     .catch((error) => console.log(error))
     .finally(() => {
-      scroll();
+    scroll();
     });
 }
 document.querySelectorAll("#listMovie").forEach((i) =>
