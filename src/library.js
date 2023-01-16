@@ -40,16 +40,7 @@ function showFavoriteMovies() {
         </li>
         `;
         refs.libraryId.insertAdjacentHTML("beforeend", markup);
-        const dataIds = Object.values(data)
-
-      console.log(dataIds)
-
-      }
-      
-      )
+      })
       .catch((error) => console.log(error));
   }
 }
-
-
-

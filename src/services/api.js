@@ -1,14 +1,5 @@
-// import LoadMoreBtn from "../helpers/loadMore.js";
-
 const API_KEY = "d3c00761eff125b45afbcd52d8235bc7";
 const BASE_URL = "https://api.themoviedb.org/3/";
-
-// const loadMoreBtn = new LoadMoreBtn({
-//   selector: "[load-more]",
-//   selector1: "[load-more1]",
-//   hidden: true,
-// });
-
 
 export default class ApiService {
   constructor() {
@@ -28,18 +19,6 @@ export default class ApiService {
         url,
       });
       const movies = await response.data;
-
-      // if (loadMoreBtn.refs.button) {
-      //   this.incrementPage();
-      // } 
-      // if (loadMoreBtn.refs1.button) {
-      //   this.decrementPage();
-      // }
-      
-
-      this.incrementPage();
-      this.decrementPage();
-
       return movies;
     } catch (error) {
       console.error(error);
@@ -74,8 +53,6 @@ export default class ApiService {
         url,
       });
       const movies = await response.data;
-      // this.incrementPage();
-      // this.decrementPage();
       return movies;
     } catch (error) {
       console.error(error);
@@ -110,19 +87,7 @@ export default class ApiService {
     this.movie_id = newId;
   }
 
-  // get pageChange() {
-  //   return this.page;
-  // }
-
-  // set pageChange(pageNew) {
-  //   this.page += pageNew;
-  // }
-
-  // get pageChange1() {
-  //   return this.page;
-  // }
-
-  // set pageChange1(pageNew) {
-  //   this.page -= pageNew;
-  // }
+  get currentPage() {
+    return this.page;
+  }
 }

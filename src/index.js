@@ -29,51 +29,53 @@ const loadMoreBtn = new LoadMoreBtn({
   hidden: true,
 });
 
-const elementInstanceLoadMore = Object.values(loadMoreBtn)
-const selectorWithInstance = elementInstanceLoadMore[0]
-const selector1WithInstance = elementInstanceLoadMore[1]
-console.log(selectorWithInstance)
-console.log(selector1WithInstance)
+function searchPagePrev() {
+  if (apiService.currentPage > 1) {
+    apiService.decrementPage();
+    onSearchForm();
+  }
+}
+function searchPageNext() {
+  apiService.incrementPage();
+  onSearchForm();
+}
 
-refs.searchForm.addEventListener("submit", onSearchForm)
+function popularPagePrev() {
+  if (apiService.currentPage > 1) {
+    apiService.decrementPage();
+    appendMoviesMarkup();
+  }
+}
+function popularPageNext() {
+  apiService.incrementPage();
+  appendMoviesMarkup();
+}
+
+refs.searchForm.addEventListener("submit", function(event) {
+  event.preventDefault();
+  apiService.resetPage();
+  onSearchForm();
+})
  
 appendMoviesMarkup();
 
 async function appendMoviesMarkup() {
-
-  
-// if (elementInstanceLoadMore[0]) {
-//         apiService.incrementPage();
-//       } 
-//       if (elementInstanceLoadMore[1]) {
-//         apiService.decrementPage();
-//       }
-
-
-if (loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup)) {
-  apiService.incrementPage();
-} 
-if (loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup)) {
-  apiService.decrementPage();
-}
 
   await apiService
     .fetchPopularMovie()
     .then((movies) => {
       const data = movies.results;
 
-    
       if (data.length === 0) {
         loadMoreBtn.hide();
         loadMoreBtn.hide1();
-       
         loadMoreBtn.refs.button.removeEventListener(
           "click",
-          appendMoviesMarkup
+          popularPageNext
         );
         loadMoreBtn.refs1.button.removeEventListener(
           "click",
-          appendMoviesMarkup
+          popularPagePrev
         );
         const markup = `<span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>`;
         refs.searchContainer.insertAdjacentHTML("beforeend", markup);
@@ -85,13 +87,12 @@ if (loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup)) {
       if (data.length >= 20) {
         loadMoreBtn.show();
         loadMoreBtn.show1();
-        loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
-        
-        loadMoreBtn.refs.button.addEventListener("click", appendMoviesMarkup);
-        
-        //apiService.decrementPage();
-        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
-        loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup);
+
+        loadMoreBtn.refs.button.removeEventListener("click", searchPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", searchPagePrev);
+
+        loadMoreBtn.refs.button.addEventListener("click", popularPageNext);
+        loadMoreBtn.refs1.button.addEventListener("click", popularPagePrev);
         
       clearMovie();
         data
@@ -117,12 +118,10 @@ if (loadMoreBtn.refs1.button.addEventListener("click", appendMoviesMarkup)) {
     });
 }
 
-async function onSearchForm(e) {
-  e.preventDefault();
- 
 
+async function onSearchForm() {
+ 
   if (refs.searchQueryInput.value === "") {
-    e.currentTarget.reset();
     const markup = `
      <span id="message" class="text-red-500 grow-0">You have not entered anything. Please enter a value.</span>
  `;
@@ -134,40 +133,22 @@ async function onSearchForm(e) {
   }
  
   apiService.query = refs.searchQueryInput.value.trim();
-//apiService.resetPage();
+
   await apiService
     .fetchSearchMovies()
     .then((movies) => {
     
       const data = movies.results;
 
-      if (movies.total_pages === movies.page) {
+      if (data.length === 0 || movies.total_pages === movies.page) {
         loadMoreBtn.hide();
         loadMoreBtn.hide1();
-        loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
-        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
-      } else {
-        loadMoreBtn.show();
-        loadMoreBtn.show1();
-        loadMoreBtn.refs.button.removeEventListener(
-          "click",
-          appendMoviesMarkup
-        );
-        loadMoreBtn.refs1.button.removeEventListener(
-          "click",
-          appendMoviesMarkup
-        );
-        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
-        loadMoreBtn.refs1.button.addEventListener("click", onSearchForm);
-      }
 
-      if (data.length === 0) {
-        loadMoreBtn.hide();
-        loadMoreBtn.hide1();
-        loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
-        loadMoreBtn.refs1.button.removeEventListener("click", onSearchForm);
+        loadMoreBtn.refs.button.removeEventListener("click", searchPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", searchPagePrev);
 
-        const markup = `
+        if (data.length === 0) {
+          const markup = `
      <span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>
  `;
         refs.searchContainer.insertAdjacentHTML("beforeend", markup);
@@ -175,23 +156,26 @@ async function onSearchForm(e) {
           document.getElementById("message").remove();
         }, 4000);
         refs.searchQueryInput.value = "";
+        }
+        
         return;
       }
 
-      if (data.length >= 1) {
+      if (data.length >= 1 || movies.total_pages === movies.page) {
         loadMoreBtn.show();
         loadMoreBtn.show1();
         loadMoreBtn.refs.button.removeEventListener(
           "click",
-          appendMoviesMarkup
+          popularPageNext
         );
         loadMoreBtn.refs1.button.removeEventListener(
           "click",
-          appendMoviesMarkup
+          popularPagePrev
         );
+
+        loadMoreBtn.refs.button.addEventListener("click", searchPageNext);
+        loadMoreBtn.refs1.button.addEventListener("click", searchPagePrev);
        
-        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
-        loadMoreBtn.refs1.button.addEventListener("click", onSearchForm);
        clearMovie();
 
         data
@@ -216,6 +200,7 @@ async function onSearchForm(e) {
     scroll();
     });
 }
+
 document.querySelectorAll("#listMovie").forEach((i) =>
   i.addEventListener("click", (e) => {
     onToggle();
