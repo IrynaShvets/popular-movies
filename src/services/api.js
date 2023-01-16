@@ -54,6 +54,7 @@ export default class ApiService {
         url,
       });
       const movies = await response.data;
+
       this.incrementPage();
       return movies;
     } catch (error) {

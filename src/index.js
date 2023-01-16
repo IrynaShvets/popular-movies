@@ -29,8 +29,8 @@ const loadMoreBtn = new LoadMoreBtn({
   hidden: true,
 });
 
-refs.searchForm.addEventListener("submit", onSearchForm);
-
+refs.searchForm.addEventListener("submit", onSearchForm)
+ 
 appendMoviesMarkup();
 
 async function appendMoviesMarkup() {
@@ -41,6 +41,7 @@ async function appendMoviesMarkup() {
 
       if (data.length === 0) {
         loadMoreBtn.hide();
+       
         loadMoreBtn.refs.button.removeEventListener(
           "click",
           appendMoviesMarkup
@@ -83,6 +84,7 @@ async function appendMoviesMarkup() {
 
 async function onSearchForm(e) {
   e.preventDefault();
+ // apiService.resetPage();
 
   if (refs.searchQueryInput.value === "") {
     e.currentTarget.reset();
@@ -95,12 +97,13 @@ async function onSearchForm(e) {
     }, 4000);
     return;
   }
-  apiService.resetPage();
+ 
   apiService.query = refs.searchQueryInput.value.trim();
 
   await apiService
     .fetchSearchMovies()
     .then((movies) => {
+    
       const data = movies.results;
 
       if (movies.total_pages === movies.page) {
@@ -108,11 +111,12 @@ async function onSearchForm(e) {
         loadMoreBtn.refs.button.removeEventListener("click", onSearchForm);
       } else {
         loadMoreBtn.show();
+      
         loadMoreBtn.refs.button.removeEventListener(
           "click",
           appendMoviesMarkup
         );
-        loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
+        loadMoreBtn.refs.button.addEventListener("click", onSearchForm)
       }
 
       if (data.length === 0) {
@@ -136,7 +140,7 @@ async function onSearchForm(e) {
           "click",
           appendMoviesMarkup
         );
-        apiService.resetPage();
+       
         loadMoreBtn.refs.button.addEventListener("click", onSearchForm);
         clearMovie();
 
