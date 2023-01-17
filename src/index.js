@@ -212,6 +212,8 @@ document.querySelectorAll("#listMovie").forEach((i) =>
     apiService
       .fetchMovieDetails()
       .then((data) => {
+
+        console.log(data)
         if (!data || !data.id) {
           return;
         }
@@ -248,12 +250,15 @@ document.querySelectorAll("#listMovie").forEach((i) =>
   })
 );
 
-refs.favoriteBtn.addEventListener("click", () => {
+refs.favoriteBtn.addEventListener("click", onFavoriteAttribute);
+refs.favoriteBtn.removeEventListener("click", onFavoriteAttribute, true);
+
+function onFavoriteAttribute() {
   let getAtrToFavoriteBtn = refs.favoriteBtn.getAttribute("current-Id");
   if (getAtrToFavoriteBtn > 0) {
     appendValueToStorage("todays-values", getAtrToFavoriteBtn);
   }
-});
+};
 
 refs.closeModalBtn.addEventListener("click", onToggle);
 refs.closeModalBtn.removeEventListener("click", onToggle, true);

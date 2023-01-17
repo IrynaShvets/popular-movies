@@ -5,7 +5,7 @@ const refs = {
 export default function appendValueToStorage(key, value) {
   try {
     let values = JSON.parse(localStorage.getItem(key));
-    if (values === null) {
+    if (values === null || values === "" || values === [""]) {
       values = [];
     }
 
@@ -27,6 +27,7 @@ export default function appendValueToStorage(key, value) {
           .querySelector("body")
           .insertAdjacentHTML("beforebegin", markup);
       }, 0);
+      
     } else {
       values.push(value);
 
