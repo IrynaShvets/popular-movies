@@ -2,6 +2,7 @@ import LoadMoreBtn from "./helpers/loadMore.js";
 import ApiService from "./services/api.js";
 import scroll from "./helpers/scroll.js";
 import appendValueToStorage from "./helpers/localStorage.js";
+import { genres } from "./helpers/genres.js";
 
 const refs = {
   listMovie: document.getElementById("listMovie"),
@@ -51,16 +52,37 @@ function popularPageNext() {
   appendMoviesMarkup();
 }
 
-refs.searchForm.addEventListener("submit", function(event) {
+function yearPagePrev() {
+  if (apiService.currentPage > 1) {
+    apiService.decrementPage();
+    getMoviesOfSelectedYear();
+  }
+}
+function yearPageNext() {
+  apiService.incrementPage();
+  getMoviesOfSelectedYear();
+}
+
+function genrePagePrev() {
+  if (apiService.currentPage > 1) {
+    apiService.decrementPage();
+    getMoviesOfSelectedGenre();
+  }
+}
+function genrePageNext() {
+  apiService.incrementPage();
+  getMoviesOfSelectedGenre();
+}
+
+refs.searchForm.addEventListener("submit", function (event) {
   event.preventDefault();
   apiService.resetPage();
   onSearchForm();
-})
- 
+});
+
 appendMoviesMarkup();
 
 async function appendMoviesMarkup() {
-
   await apiService
     .fetchPopularMovie()
     .then((movies) => {
@@ -69,14 +91,9 @@ async function appendMoviesMarkup() {
       if (data.length === 0) {
         loadMoreBtn.hide();
         loadMoreBtn.hide1();
-        loadMoreBtn.refs.button.removeEventListener(
-          "click",
-          popularPageNext
-        );
-        loadMoreBtn.refs1.button.removeEventListener(
-          "click",
-          popularPagePrev
-        );
+        loadMoreBtn.refs.button.removeEventListener("click", popularPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", popularPagePrev);
+
         const markup = `<span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>`;
         refs.searchContainer.insertAdjacentHTML("beforeend", markup);
         setTimeout(() => {
@@ -90,11 +107,15 @@ async function appendMoviesMarkup() {
 
         loadMoreBtn.refs.button.removeEventListener("click", searchPageNext);
         loadMoreBtn.refs1.button.removeEventListener("click", searchPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", yearPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", yearPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", genrePageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", genrePagePrev);
 
         loadMoreBtn.refs.button.addEventListener("click", popularPageNext);
         loadMoreBtn.refs1.button.addEventListener("click", popularPagePrev);
-        
-      clearMovie();
+
+        clearMovie();
         data
           .map(({ title, backdrop_path, id }) => {
             const markup =
@@ -118,9 +139,7 @@ async function appendMoviesMarkup() {
     });
 }
 
-
 async function onSearchForm() {
- 
   if (refs.searchQueryInput.value === "") {
     const markup = `
      <span id="message" class="text-red-500 grow-0">You have not entered anything. Please enter a value.</span>
@@ -131,13 +150,12 @@ async function onSearchForm() {
     }, 4000);
     return;
   }
- 
+
   apiService.query = refs.searchQueryInput.value.trim();
 
   await apiService
     .fetchSearchMovies()
     .then((movies) => {
-    
       const data = movies.results;
 
       if (data.length === 0 || movies.total_pages === movies.page) {
@@ -151,32 +169,29 @@ async function onSearchForm() {
           const markup = `
      <span id="message" class="text-red-500 grow-0">Sorry, but nothing was found for your request.</span>
  `;
-        refs.searchContainer.insertAdjacentHTML("beforeend", markup);
-        setTimeout(() => {
-          document.getElementById("message").remove();
-        }, 4000);
-        refs.searchQueryInput.value = "";
+          refs.searchContainer.insertAdjacentHTML("beforeend", markup);
+          setTimeout(() => {
+            document.getElementById("message").remove();
+          }, 4000);
+          refs.searchQueryInput.value = "";
         }
-        
         return;
       }
 
       if (data.length >= 1 || movies.total_pages === movies.page) {
         loadMoreBtn.show();
         loadMoreBtn.show1();
-        loadMoreBtn.refs.button.removeEventListener(
-          "click",
-          popularPageNext
-        );
-        loadMoreBtn.refs1.button.removeEventListener(
-          "click",
-          popularPagePrev
-        );
+        loadMoreBtn.refs.button.removeEventListener("click", popularPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", popularPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", yearPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", yearPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", genrePageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", genrePagePrev);
 
         loadMoreBtn.refs.button.addEventListener("click", searchPageNext);
         loadMoreBtn.refs1.button.addEventListener("click", searchPagePrev);
-       
-       clearMovie();
+
+        clearMovie();
 
         data
           .map((movie) => {
@@ -197,8 +212,158 @@ async function onSearchForm() {
     })
     .catch((error) => console.log(error))
     .finally(() => {
-    scroll();
+      scroll();
     });
+}
+
+  document.querySelector("#genresId").addEventListener("change", renderMarkupGenres);
+  document.querySelector("#genresId").removeEventListener("change", renderMarkupGenres, true);
+  
+  function renderMarkupGenres(event) {
+  event.preventDefault();
+  apiService.resetPage();
+  let genre = event.target.value;
+  apiService.genre = genre;
+  getMoviesOfSelectedGenre();
+}
+
+  document.querySelector("#yearsId").addEventListener("change", renderMarkupYears);
+  document.querySelector("#yearsId").removeEventListener("change", renderMarkupYears, true);
+  
+  function renderMarkupYears(event) {
+  event.preventDefault();
+  apiService.resetPage();
+  let year = event.target.value;
+  apiService.year = Number(year);
+  getMoviesOfSelectedYear();
+}
+
+async function getMoviesOfSelectedYear() {
+  await apiService
+    .fetchMoviesOfSelectedYear()
+    .then((movies) => {
+      const data = movies.results;
+
+      if (data.length === 0) {
+        loadMoreBtn.hide();
+        loadMoreBtn.hide1();
+
+        loadMoreBtn.refs.button.removeEventListener("click", yearPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", yearPagePrev);
+        return;
+      }
+
+        loadMoreBtn.show();
+        loadMoreBtn.show1();
+        loadMoreBtn.refs.button.removeEventListener("click", popularPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", popularPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", searchPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", searchPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", genrePageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", genrePagePrev);
+
+        loadMoreBtn.refs.button.addEventListener("click", yearPageNext);
+        loadMoreBtn.refs1.button.addEventListener("click", yearPagePrev);
+
+      clearMovie();
+
+      data
+        .map((movie) => {
+          const markup =
+            movie.backdrop_path && movie.backdrop_path !== null
+              ? `<li movie-id=${movie.id} id="modalid" class="relative w-[550px] h-[370px]">
+              <img src="${BASE_URL_IMAGE}${movie.backdrop_path}" alt="${movie.title} loading='lazy'" class="rounded block w-[550px] h-[370px]">
+              <p class="absolute left-2 bottom-2 text-xl text-slate-200">${movie.title}</p>
+              </li>`
+              : `<li movie-id=${movie.id} id="modalid" class="relative w-[550px] h-[370px]">  
+              <img src="${BASE_URL_DEFAULTS}" alt="${movie.title}" loading='lazy' class="rounded block w-[550px] h-[370px]">
+              <p class="absolute left-2 bottom-2 text-xl text-slate-200">${movie.title}</p>
+              </li>`;
+          refs.listMovie.insertAdjacentHTML("beforeend", markup);
+        })
+        .join("");
+    })
+    .catch((error) => console.log(error))
+    .finally(() => {
+      scroll();
+    });
+}
+
+async function getMoviesOfSelectedGenre() {
+  await apiService
+    .fetchMoviesOfSelectedGenre()
+    .then((movies) => {
+      const data = movies.results;
+
+      if (data.length === 0) {
+        loadMoreBtn.hide();
+        loadMoreBtn.hide1();
+
+        loadMoreBtn.refs.button.removeEventListener("click", genrePageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", genrePagePrev);
+        return;
+      }
+
+        loadMoreBtn.show();
+        loadMoreBtn.show1();
+        loadMoreBtn.refs.button.removeEventListener("click", popularPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", popularPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", searchPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", searchPagePrev);
+        loadMoreBtn.refs.button.removeEventListener("click", yearPageNext);
+        loadMoreBtn.refs1.button.removeEventListener("click", yearPagePrev);
+
+        loadMoreBtn.refs.button.addEventListener("click", genrePageNext);
+        loadMoreBtn.refs1.button.addEventListener("click", genrePagePrev);
+
+      clearMovie();
+
+      data
+        .map((movie) => {
+          const markup =
+            movie.backdrop_path && movie.backdrop_path !== null
+              ? `<li movie-id=${movie.id} id="modalid" class="relative w-[550px] h-[370px]">
+              <img src="${BASE_URL_IMAGE}${movie.backdrop_path}" alt="${movie.title} loading='lazy'" class="rounded block w-[550px] h-[370px]">
+              <p class="absolute left-2 bottom-2 text-xl text-slate-200">${movie.title}</p>
+              </li>`
+              : `<li movie-id=${movie.id} id="modalid" class="relative w-[550px] h-[370px]">  
+              <img src="${BASE_URL_DEFAULTS}" alt="${movie.title}" loading='lazy' class="rounded block w-[550px] h-[370px]">
+              <p class="absolute left-2 bottom-2 text-xl text-slate-200">${movie.title}</p>
+              </li>`;
+          refs.listMovie.insertAdjacentHTML("beforeend", markup);
+        })
+        .join("");
+    })
+    .catch((error) => console.log(error))
+    .finally(() => {
+      scroll();
+    });
+}
+
+selectedYears();
+function selectedYears() {
+  let startYear = 1907;
+  let endYear = new Date().getFullYear();
+  const yearsList = () => {
+    let str = `<option value="" selected>All years</option>`;
+    for (let i = endYear; i >= startYear; i -= 1) {
+      str += `<option value="${i}">${i}</option>`;
+    }
+    return str;
+  };
+  document.querySelector("#yearsId").innerHTML = yearsList();
+}
+
+selectedGenres();
+function selectedGenres() {
+  const genresList = () => {
+    let select = `<option value="" selected>All genres</option>`;
+    genres.map(el => {
+      select += `<option value="${el.id}">${el.name}</option>`;
+    })
+    return select;
+  };
+  document.querySelector("#genresId").innerHTML = genresList();
 }
 
 document.querySelectorAll("#listMovie").forEach((i) =>
@@ -212,8 +377,7 @@ document.querySelectorAll("#listMovie").forEach((i) =>
     apiService
       .fetchMovieDetails()
       .then((data) => {
-
-        console.log(data)
+        console.log(data);
         if (!data || !data.id) {
           return;
         }
@@ -258,7 +422,7 @@ function onFavoriteAttribute() {
   if (getAtrToFavoriteBtn > 0) {
     appendValueToStorage("todays-values", getAtrToFavoriteBtn);
   }
-};
+}
 
 refs.closeModalBtn.addEventListener("click", onToggle);
 refs.closeModalBtn.removeEventListener("click", onToggle, true);

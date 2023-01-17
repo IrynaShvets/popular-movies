@@ -6,11 +6,12 @@ export default class ApiService {
     this.page = 1;
     this.searchQuery = "";
     this.movie_id = null;
+    this.genre = '';
+    this.year = '';
   }
 
   async fetchPopularMovie() {
     const url = `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${this.page}`;
-    console.log(url);
     try {
       const response = await axios({
         method: "get",
@@ -21,13 +22,12 @@ export default class ApiService {
       const movies = await response.data;
       return movies;
     } catch (error) {
-      console.error(error);
+      return error;
     }
   }
 
   async fetchMovieDetails() {
     const url = `${BASE_URL}movie/${this.movie_id}?api_key=${API_KEY}`;
-
     try {
       const response = await axios({
         method: "get",
@@ -38,13 +38,12 @@ export default class ApiService {
       const movie = await response.data;
       return movie;
     } catch (error) {
-      console.error(error);
+      return error;
     }
   }
 
   async fetchSearchMovies() {
     const url = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${this.searchQuery}&page=${this.page}`;
-    console.log(url);
     try {
       const response = await axios({
         method: "get",
@@ -55,19 +54,41 @@ export default class ApiService {
       const movies = await response.data;
       return movies;
     } catch (error) {
-      console.error(error);
+      return error;
     }
   }
 
-  async incrementPage() {
+  async fetchMoviesOfSelectedYear() {
+    try {
+      const url = `${BASE_URL}discover/movie?api_key=${API_KEY}&primary_release_year=${this.year}&page=${this.page}`;
+      const response = await axios.get(url);
+      const movies = await response.data;
+      return movies;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async fetchMoviesOfSelectedGenre() {
+    try {
+      const url = `${BASE_URL}discover/movie?api_key=${API_KEY}&with_genres=${this.genre}&page=${this.page}`;
+      const response = await axios.get(url);
+      const movies = await response.data;
+      return movies;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  incrementPage() {
     this.page += 1;
   }
 
-  async decrementPage() {
+  decrementPage() {
     this.page -= 1;
   }
 
-  async resetPage() {
+  resetPage() {
     this.page = 1;
   }
 
